@@ -13,7 +13,6 @@ import com.steamext.steam.api.model.requestmodel.UserCredentials;
 import com.steamext.steam.api.model.requestmodel.UserLoginInfo;
 import com.steamext.steam.api.model.requestmodel.UserPageInfo;
 import com.steamext.steam.api.model.responsemodel.RsaDataContainer;
-import com.steamext.steam.api.model.responsemodel.StartMarketPageResponse;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,11 +84,11 @@ public class SteamHttpClientIT {
     @Test
     @Order(4)
     public void testGettingMarketPage() throws SteamHttpClientException {
-        StartMarketPageResponse response = client.execute(new GetMarketPageSteamHttpRequest(),
+        String marketPage = client.execute(new GetMarketPageSteamHttpRequest(),
                 new MarketPageHTMLParser());
 
 
-        assertNotNull(response);
-//        assertTrue(marketPage.contains((String) properties.getData().get("it.username")));
+        assertNotNull(marketPage);
+        assertTrue(marketPage.contains((String) properties.getData().get("it.username")));
     }
 }
