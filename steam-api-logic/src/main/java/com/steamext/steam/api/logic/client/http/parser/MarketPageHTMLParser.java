@@ -1,16 +1,13 @@
 package com.steamext.steam.api.logic.client.http.parser;
 
 import com.steamext.steam.api.logic.exceptions.SteamHttpClientException;
-import com.steamext.steam.api.model.requestmodel.UserPageInfo;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 
 @Data

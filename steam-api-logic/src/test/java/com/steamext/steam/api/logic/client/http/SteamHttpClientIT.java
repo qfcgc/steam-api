@@ -10,9 +10,9 @@ import com.steamext.steam.api.logic.client.http.request.GetUserInfoSteamHttpRequ
 import com.steamext.steam.api.logic.client.http.request.LoginSteamHttpRequest;
 import com.steamext.steam.api.logic.exceptions.SteamHttpClientException;
 import com.steamext.steam.api.model.requestmodel.UserCredentials;
-import com.steamext.steam.api.model.requestmodel.UserLoginInfo;
+import com.steamext.steam.api.logic.model.responsemodel.UserLoginInfo;
 import com.steamext.steam.api.model.requestmodel.UserPageInfo;
-import com.steamext.steam.api.model.responsemodel.RsaDataContainer;
+import com.steamext.steam.api.logic.model.responsemodel.RsaDataContainer;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
