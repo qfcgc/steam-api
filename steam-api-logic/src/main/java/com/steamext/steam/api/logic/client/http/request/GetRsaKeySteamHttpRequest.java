@@ -1,6 +1,6 @@
 package com.steamext.steam.api.logic.client.http.request;
 
-import com.steamext.steam.api.model.responsemodel.RsaDataContainer;
+import com.steamext.steam.api.logic.model.responsemodel.RsaDataContainer;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

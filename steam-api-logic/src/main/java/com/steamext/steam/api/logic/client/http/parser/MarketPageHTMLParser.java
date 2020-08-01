@@ -1,9 +1,9 @@
 package com.steamext.steam.api.logic.client.http.parser;
 
 import com.steamext.steam.api.logic.exceptions.SteamHttpClientException;
-import com.steamext.steam.api.model.responsemodel.MarketRestriction;
-import com.steamext.steam.api.model.responsemodel.MarketRestrictions;
-import com.steamext.steam.api.model.responsemodel.StartMarketPageResponse;
+import com.steamext.steam.api.logic.model.responsemodel.MarketRestriction;
+import com.steamext.steam.api.logic.model.responsemodel.MarketRestrictions;
+import com.steamext.steam.api.logic.model.responsemodel.StartMarketPageResponse;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
