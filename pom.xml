@@ -31,6 +31,8 @@
         <apache.httpcore>4.4.13</apache.httpcore>
         <org.jsoup.version>1.13.1</org.jsoup.version>
         <jackson.version>2.11.1</jackson.version>
+        <log4j.version>2.13.3</log4j.version>
+        <slf4j.log4j.version>1.7.30</slf4j.log4j.version>
     </properties>
 
     <dependencyManagement>
@@ -108,6 +110,16 @@
                 <artifactId>jackson-annotations</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-core</artifactId>
+                <version>${log4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-log4j12</artifactId>
+                <version>${slf4j.log4j.version}</version>
+            </dependency>
 
             <!-- Testing -->
             <dependency>
@@ -159,6 +171,14 @@
                 <artifactId>maven-dependency-plugin</artifactId>
                 <version>${maven.dependency.plugin}</version>
                 <configuration>
+                    <ignoredDependencies>
+                        <ignoredDependency>
+                            org.slf4j:slf4j-log4j12:jar:${slf4j.log4j.version}
+                        </ignoredDependency>
+                        <ignoredDependency>
+                            org.apache.logging.log4j:log4j-core:jar:${log4j.version}
+                        </ignoredDependency>
+                    </ignoredDependencies>
                     <ignoredUnusedDeclaredDependencies>
                         <ignoredUnusedDeclaredDependency>
                             org.projectlombok:lombok:jar:${lombok.version}
