@@ -15,6 +15,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
+
+/**
+ * HTML parser implementation for parsing start market page html input stream.
+ */
 @Data
 @Slf4j
 public class MarketPageHTMLParser implements SteamHTMLParser<StartMarketPageResponse> {
@@ -34,6 +38,12 @@ public class MarketPageHTMLParser implements SteamHTMLParser<StartMarketPageResp
         }
     }
 
+    /**
+     * Extract all restriction elements from html page.
+     *
+     * @param doc market html page
+     * @return market restrictions element (not null, it can contain empty list of restrictions)
+     */
     private MarketRestrictions getAllRestrictions(Document doc) {
         MarketRestrictions restrictions;
         Element marketRestrictionElements = doc.selectFirst("ul.market_restrictions");
@@ -45,20 +55,34 @@ public class MarketPageHTMLParser implements SteamHTMLParser<StartMarketPageResp
         return restrictions;
     }
 
+    /**
+     * Extract all restriction elements from html element.
+     *
+     * @param restrictionsContainer html element which contains restriction elements
+     * @return market restrictions element (not null, it can contain empty list of restrictions)
+     */
     private MarketRestrictions getAllRestrictionsFromRestrictionsContainer(Element restrictionsContainer) {
         MarketRestrictions marketRestrictions = new MarketRestrictions();
 
-        Elements restrictionItems = restrictionsContainer.select("li");
-        if (restrictionItems != null) {
-            for (Element restrictionItem : restrictionItems) {
-                MarketRestriction restriction = getRestrictionFromElement(restrictionItem);
-                marketRestrictions.getRestrictions().add(restriction);
+        if (restrictionsContainer != null) {
+            Elements restrictionItems = restrictionsContainer.select("li");
+            if (restrictionItems != null) {
+                for (Element restrictionItem : restrictionItems) {
+                    MarketRestriction restriction = getRestrictionFromElement(restrictionItem);
+                    marketRestrictions.getRestrictions().add(restriction);
+                }
             }
         }
 
         return marketRestrictions;
     }
 
+    /**
+     * Extract restriction from restriction html element.
+     *
+     * @param restrictionElement html element containing restriction info
+     * @return market restriction object or null if there are no fields to extract from html element
+     */
     private MarketRestriction getRestrictionFromElement(Element restrictionElement) {
         MarketRestriction restriction = null;
         String restrictionHelpLink = getRestrictionHelpLink(restrictionElement);
@@ -71,6 +95,12 @@ public class MarketPageHTMLParser implements SteamHTMLParser<StartMarketPageResp
         return restriction;
     }
 
+    /**
+     * Extract link to steam help page for restriction.
+     *
+     * @param restrictionElement element containing link to help page
+     * @return link to steam help page or null if {@code restrictionElement} doesn't contain it
+     */
     private String getRestrictionHelpLink(Element restrictionElement) {
         String restrictionHelpLink = null;
         if (restrictionElement != null) {
