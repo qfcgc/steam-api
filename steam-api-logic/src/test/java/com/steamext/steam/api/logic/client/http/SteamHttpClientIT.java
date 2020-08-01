@@ -9,10 +9,9 @@ import com.steamext.steam.api.logic.client.http.request.GetRsaKeySteamHttpReques
 import com.steamext.steam.api.logic.client.http.request.GetUserInfoSteamHttpRequest;
 import com.steamext.steam.api.logic.client.http.request.LoginSteamHttpRequest;
 import com.steamext.steam.api.logic.exceptions.SteamHttpClientException;
+import com.steamext.steam.api.logic.model.responsemodel.*;
 import com.steamext.steam.api.model.requestmodel.UserCredentials;
-import com.steamext.steam.api.logic.model.responsemodel.UserLoginInfo;
 import com.steamext.steam.api.model.requestmodel.UserPageInfo;
-import com.steamext.steam.api.logic.model.responsemodel.RsaDataContainer;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,11 +83,21 @@ public class SteamHttpClientIT {
     @Test
     @Order(4)
     public void testGettingMarketPage() throws SteamHttpClientException {
-        String marketPage = client.execute(new GetMarketPageSteamHttpRequest(),
+        StartMarketPageResponse response = client.execute(new GetMarketPageSteamHttpRequest(),
                 new MarketPageHTMLParser());
 
 
-        assertNotNull(marketPage);
-        assertTrue(marketPage.contains((String) properties.getData().get("it.username")));
+        assertNotNull(response);
+        if (response.getRestrictions() != null) {
+            validateRestrictions(response.getRestrictions());
+        }
+    }
+
+    private void validateRestrictions(MarketRestrictions restrictions) {
+        for (MarketRestriction restriction : restrictions.getRestrictions()) {
+            assertTrue(
+                    restriction.getRestrictionHelpLink() != null
+                            || restriction.getRestrictionText() != null);
+        }
     }
 }

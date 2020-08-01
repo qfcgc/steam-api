@@ -16,7 +16,10 @@ import org.apache.http.impl.cookie.BasicClientCookie;
 
 import java.io.IOException;
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 
 @Slf4j
 public class SteamHttpClient {
@@ -130,6 +133,9 @@ public class SteamHttpClient {
 
             String paramName = rawCookieParamNameAndValue[0].trim();
 
+            if (paramName.equalsIgnoreCase("HttpOnly")) {
+                continue;
+            }
             if (paramName.equalsIgnoreCase("secure")) {
                 cookie.setSecure(true);
             } else {
@@ -140,9 +146,10 @@ public class SteamHttpClient {
                 String paramValue = rawCookieParamNameAndValue[1].trim();
 
                 if (paramName.equalsIgnoreCase("expires")) {
-                    Date expiryDate = DateFormat.getDateTimeInstance(DateFormat.FULL,
-                            DateFormat.HOUR_OF_DAY1_FIELD)
-                            .parse(paramValue);
+                    DateFormat osLocalizedDateFormat =
+                            new SimpleDateFormat("EEE, dd-MMM-yyyy hh:mm:ss", Locale.ENGLISH);
+                    osLocalizedDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+                    Date expiryDate = osLocalizedDateFormat.parse("Sun, 01-Aug-2021 13:01:37 GMT");
                     cookie.setExpiryDate(expiryDate);
                 } else if (paramName.equalsIgnoreCase("max-age")) {
                     long maxAge = Long.parseLong(paramValue);
