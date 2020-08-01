@@ -12,6 +12,8 @@ import com.steamext.steam.api.logic.exceptions.SteamHttpClientException;
 import com.steamext.steam.api.model.requestmodel.UserCredentials;
 import com.steamext.steam.api.model.requestmodel.UserLoginInfo;
 import com.steamext.steam.api.model.requestmodel.UserPageInfo;
+import com.steamext.steam.api.model.responsemodel.MarketRestriction;
+import com.steamext.steam.api.model.responsemodel.MarketRestrictions;
 import com.steamext.steam.api.model.responsemodel.RsaDataContainer;
 import com.steamext.steam.api.model.responsemodel.StartMarketPageResponse;
 import org.junit.jupiter.api.*;
@@ -90,6 +92,16 @@ public class SteamHttpClientIT {
 
 
         assertNotNull(response);
-//        assertTrue(marketPage.contains((String) properties.getData().get("it.username")));
+        if (response.getRestrictions() != null) {
+            validateRestrictions(response.getRestrictions());
+        }
+    }
+
+    private void validateRestrictions(MarketRestrictions restrictions) {
+        for (MarketRestriction restriction : restrictions.getRestrictions()) {
+            assertTrue(
+                    restriction.getRestrictionHelpLink() != null
+                            || restriction.getRestrictionText() != null);
+        }
     }
 }
