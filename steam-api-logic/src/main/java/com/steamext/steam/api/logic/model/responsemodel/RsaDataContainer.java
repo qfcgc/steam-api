@@ -1,4 +1,4 @@
-package com.steamext.steam.api.model.responsemodel;
+package com.steamext.steam.api.logic.model.responsemodel;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;

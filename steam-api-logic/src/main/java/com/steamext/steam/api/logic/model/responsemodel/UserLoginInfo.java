@@ -1,4 +1,4 @@
-package com.steamext.steam.api.model.requestmodel;
+package com.steamext.steam.api.logic.model.responsemodel;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
