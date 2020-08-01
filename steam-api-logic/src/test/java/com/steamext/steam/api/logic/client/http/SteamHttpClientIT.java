@@ -18,8 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = TestConfig.class)
@@ -80,6 +79,9 @@ public class SteamHttpClientIT {
         assertNotNull(userInfo);
     }
 
+    /**
+     * Test for getting start market page and extraction info from it.
+     */
     @Test
     @Order(4)
     public void testGettingMarketPage() throws SteamHttpClientException {
@@ -87,17 +89,24 @@ public class SteamHttpClientIT {
                 new MarketPageHTMLParser());
 
 
-        assertNotNull(response);
+        assertNotNull(response, "client must return non-null response value");
         if (response.getRestrictions() != null) {
             validateRestrictions(response.getRestrictions());
         }
     }
 
+    /**
+     * Market restriction must contain at least one field filled.
+     * It will fail test if any of market restriction has all field empty (null).
+     *
+     * @param restrictions market restrictions object
+     */
     private void validateRestrictions(MarketRestrictions restrictions) {
         for (MarketRestriction restriction : restrictions.getRestrictions()) {
-            assertTrue(
-                    restriction.getRestrictionHelpLink() != null
-                            || restriction.getRestrictionText() != null);
+            assertFalse(
+                    restriction.getRestrictionHelpLink() == null
+                            && restriction.getRestrictionText() == null,
+                    "Market restriction must contain at least one non-null field");
         }
     }
 }
