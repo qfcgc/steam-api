@@ -34,7 +34,7 @@ public class SteamHttpClientIT {
 
     @BeforeAll
     public void init() {
-        client = new SteamHttpClient();
+        client = SteamHttpClient.builder().build();
     }
 
     @Test

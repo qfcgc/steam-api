@@ -3,41 +3,46 @@ package com.steamext.steam.api.logic.client.http;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.steamext.steam.api.logic.client.http.parser.SteamHTMLParser;
 import com.steamext.steam.api.logic.client.http.request.SteamHttpRequest;
+import com.steamext.steam.api.logic.client.http.utils.BasicClientCookieParser;
+import com.steamext.steam.api.logic.client.http.utils.ClientCookieParser;
 import com.steamext.steam.api.logic.exceptions.SteamHttpClientException;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpClient;
+import org.apache.http.cookie.ClientCookie;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.cookie.BasicClientCookie;
 
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
+import java.util.Arrays;
 
 @Slf4j
+@Getter
 public class SteamHttpClient {
+    private final HttpHost defaultSteamHost =
+            new HttpHost("steamcommunity.com", 443, "https");
+    @Builder.Default
+    private final CookieStore cookieStore = new BasicCookieStore();
+    @Builder.Default
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    @Builder.Default
+    private final ClientCookieParser cookieParser = new BasicClientCookieParser();
     private HttpClient client;
-    private CookieStore cookieStore;
 
-    private HttpHost defaultSteamHost;
-
-    private ObjectMapper objectMapper;
-
-    public SteamHttpClient() {
+    @Builder
+    public SteamHttpClient(ClientCookieParser clientCookieParser,
+                           CookieStore cookieStore,
+                           ObjectMapper objectMapper) {
         init();
     }
 
     private void init() {
-        defaultSteamHost = new HttpHost("steamcommunity.com", 443, "https");
-        objectMapper = new ObjectMapper();
-        this.cookieStore = new BasicCookieStore();
         client = getConfiguredClient();
     }
 
@@ -57,18 +62,8 @@ public class SteamHttpClient {
         T resultObject;
         try {
             resultObject = client.execute(defaultSteamHost, request, response -> {
-                Header[] setCookies = response.getHeaders("Set-Cookie");
-                if (setCookies != null) {
-                    for (Header setCookie : setCookies) {
-                        String cookieLine = setCookie.getValue();
-                        try {
-                            BasicClientCookie basicClientCookie = parseRawCookie(cookieLine);
-                            cookieStore.addCookie(basicClientCookie);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
+                extractAndSetCookies(response);
+
                 //todo: handle if not 200 OK
                 return objectMapper.readValue(response.getEntity().getContent(), valueType);
             });
@@ -87,21 +82,7 @@ public class SteamHttpClient {
         T resultObject;
         try {
             resultObject = client.execute(defaultSteamHost, request, response -> {
-//                String cookieLine = response.getHeaders("Set-Cookie")[0].getValue();
-//                String name = cookieLine.substring(cookieLine.indexOf('='));
-//                String value = cookieLine.substring(cookieLine.indexOf('=')+1);
-                Header[] setCookies = response.getHeaders("Set-Cookie");
-                if (setCookies != null) {
-                    for (Header setCookie : setCookies) {
-                        String cookieLine = setCookie.getValue();
-                        try {
-                            BasicClientCookie basicClientCookie = parseRawCookie(cookieLine);
-                            cookieStore.addCookie(basicClientCookie);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
+                extractAndSetCookies(response);
 
                 //todo: handle if not 200 OK
                 try {
@@ -117,56 +98,28 @@ public class SteamHttpClient {
         return resultObject;
     }
 
-    private BasicClientCookie parseRawCookie(String rawCookie) throws Exception {
-        String[] rawCookieParams = rawCookie.split(";");
-
-        String[] rawCookieNameAndValue = rawCookieParams[0].split("=");
-        if (rawCookieNameAndValue.length != 2) {
-            throw new Exception("Invalid cookie: missing name and value.");
+    private void extractAndSetCookies(HttpResponse response) {
+        Header[] setCookies = response.getHeaders("Set-Cookie");
+        if (setCookies != null) {
+            Arrays.stream(setCookies).forEach(this::extractAndSetCookie);
         }
+    }
 
-        String cookieName = rawCookieNameAndValue[0].trim();
-        String cookieValue = rawCookieNameAndValue[1].trim();
-        BasicClientCookie cookie = new BasicClientCookie(cookieName, cookieValue);
-        for (int i = 1; i < rawCookieParams.length; i++) {
-            String rawCookieParamNameAndValue[] = rawCookieParams[i].trim().split("=");
-
-            String paramName = rawCookieParamNameAndValue[0].trim();
-
-            if (paramName.equalsIgnoreCase("HttpOnly")) {
-                continue;
-            }
-            if (paramName.equalsIgnoreCase("secure")) {
-                cookie.setSecure(true);
-            } else {
-                if (rawCookieParamNameAndValue.length != 2) {
-                    throw new Exception("Invalid cookie: attribute not a flag or missing value.");
-                }
-
-                String paramValue = rawCookieParamNameAndValue[1].trim();
-
-                if (paramName.equalsIgnoreCase("expires")) {
-                    DateFormat osLocalizedDateFormat =
-                            new SimpleDateFormat("EEE, dd-MMM-yyyy hh:mm:ss", Locale.ENGLISH);
-                    osLocalizedDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-                    Date expiryDate = osLocalizedDateFormat.parse("Sun, 01-Aug-2021 13:01:37 GMT");
-                    cookie.setExpiryDate(expiryDate);
-                } else if (paramName.equalsIgnoreCase("max-age")) {
-                    long maxAge = Long.parseLong(paramValue);
-                    Date expiryDate = new Date(System.currentTimeMillis() + maxAge);
-                    cookie.setExpiryDate(expiryDate);
-                } else if (paramName.equalsIgnoreCase("domain")) {
-                    cookie.setDomain(paramValue);
-                } else if (paramName.equalsIgnoreCase("path")) {
-                    cookie.setPath(paramValue);
-                } else if (paramName.equalsIgnoreCase("comment")) {
-                    cookie.setPath(paramValue);
-                } else {
-                    throw new Exception("Invalid cookie: invalid attribute name.");
-                }
-            }
+    private void extractAndSetCookie(Header cookieHeader) {
+        String cookieLine = cookieHeader.getValue();
+        try {
+            parseCookieLineAndSetCookie(cookieLine);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+    }
 
-        return cookie;
+    private void parseCookieLineAndSetCookie(String cookieLine) throws Exception {
+        ClientCookie basicClientCookie = parseRawCookie(cookieLine);
+        cookieStore.addCookie(basicClientCookie);
+    }
+
+    private ClientCookie parseRawCookie(String rawCookie) throws Exception {
+        return cookieParser.parseCookieValue(rawCookie);
     }
 }
