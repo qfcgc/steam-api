@@ -1,9 +1,9 @@
 package com.steamext.steam.api.logic.client.http.request;
 
-import com.steamext.steam.api.logic.utils.SteamPasswordRSAEncode;
-import com.steamext.steam.api.model.requestmodel.UserCredentials;
-import com.steamext.steam.api.logic.model.responsemodel.UserLoginInfo;
+import com.steamext.steam.api.logic.model.requestmodel.UserCredentials;
 import com.steamext.steam.api.logic.model.responsemodel.RsaDataContainer;
+import com.steamext.steam.api.logic.model.responsemodel.UserLoginInfo;
+import com.steamext.steam.api.logic.utils.SteamPasswordRSAEncode;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -43,7 +43,7 @@ public class LoginSteamHttpRequest implements SteamHttpRequest {
 
     protected HttpEntity generateRequestBody() {
         log.info("Generating request body for steam login request");
-        return MultipartEntityBuilder.create()
+        MultipartEntityBuilder multipartBuilder = MultipartEntityBuilder.create()
                 .addTextBody("username", credentials.getUsername())
                 .addTextBody("password",
                         SteamPasswordRSAEncode.encodePassword(
@@ -51,8 +51,14 @@ public class LoginSteamHttpRequest implements SteamHttpRequest {
                                 rsaDataContainer.getPublicKeyExp(),
                                 credentials.getPassword()))
                 .addTextBody("rsatimestamp", rsaDataContainer.getTimestamp())
-                .addTextBody("remember_login", "false")
-                .build();
+                .addTextBody("remember_login", "false");
+        if (credentials.getEmailauth() != null) {
+            multipartBuilder.addTextBody("emailauth", credentials.getEmailauth());
+        }
+        if (credentials.getEmailSteamId() != null) {
+            multipartBuilder.addTextBody("emailsteamid", credentials.getEmailSteamId());
+        }
+        return multipartBuilder.build();
     }
 
     private void validateRequiredFields() {

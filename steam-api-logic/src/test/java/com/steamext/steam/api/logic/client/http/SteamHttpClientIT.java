@@ -8,15 +8,18 @@ import com.steamext.steam.api.logic.client.http.request.GetMarketPageSteamHttpRe
 import com.steamext.steam.api.logic.client.http.request.GetRsaKeySteamHttpRequest;
 import com.steamext.steam.api.logic.client.http.request.GetUserInfoSteamHttpRequest;
 import com.steamext.steam.api.logic.client.http.request.LoginSteamHttpRequest;
+import com.steamext.steam.api.logic.entry.SteamGuardCodeProvider;
 import com.steamext.steam.api.logic.exceptions.SteamHttpClientException;
 import com.steamext.steam.api.logic.model.responsemodel.*;
-import com.steamext.steam.api.model.requestmodel.UserCredentials;
+import com.steamext.steam.api.logic.model.requestmodel.UserCredentials;
 import com.steamext.steam.api.model.requestmodel.UserPageInfo;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.util.Scanner;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -30,6 +33,9 @@ public class SteamHttpClientIT {
 
     @Autowired
     private PropertiesUtils properties;
+
+    @Autowired(required = false)
+    private SteamGuardCodeProvider steamGuardCodeProvider;
 
     @BeforeAll
     public void init() {
@@ -50,6 +56,10 @@ public class SteamHttpClientIT {
         assertNotNull(data.getTokenGId());
     }
 
+    /**
+     * Execute login to steam account.
+     * If account has steam guard you can change the value of steam guard in debug.
+     */
     @Test
     @Order(2)
     public void testLogin() throws SteamHttpClientException {
@@ -62,6 +72,24 @@ public class SteamHttpClientIT {
         loginInfo = client.execute(new LoginSteamHttpRequest(credentials, rsaDataContainer));
 
         assertNotNull(loginInfo);
+
+        if (!loginInfo.isSuccess()) {
+            String steamGuardCode = "_MOCK"; //Use debug to insert real value
+            if (steamGuardCodeProvider.getSteamGuardCode() != null) {
+                //it is not supposed to be executed in test
+                steamGuardCode = steamGuardCodeProvider.getSteamGuardCode();
+            }
+            credentials = new UserCredentials(
+                    credentials.getUsername(),
+                    credentials.getPassword(),
+                    steamGuardCode,
+                    loginInfo.getEmailSteamId());
+
+            rsaDataContainer =
+                    client.execute(new GetRsaKeySteamHttpRequest(credentials.getUsername()));
+            loginInfo = client.execute(new LoginSteamHttpRequest(credentials, rsaDataContainer));
+        }
+
         assertTrue(loginInfo.isLoginComplete());
         assertTrue(loginInfo.isSuccess());
         assertNotNull(loginInfo.getTransferParameters());
