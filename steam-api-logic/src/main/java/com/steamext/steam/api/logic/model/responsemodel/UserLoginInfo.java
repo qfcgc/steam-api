@@ -24,6 +24,18 @@ public class UserLoginInfo {
     @JsonProperty("transfer_parameters")
     private TransferParameters transferParameters;
 
+    @JsonProperty("emailauth_needed")
+    private boolean emailAuthNeeded;
+
+    @JsonProperty("emailsteamid")
+    private String emailSteamId;
+
+    @JsonProperty("emaildomain")
+    private String emailDomain;
+
+    @JsonProperty("message")
+    private String message;
+
     @Data
     public static class TransferParameters {
         @JsonProperty("steamid")
@@ -37,5 +49,8 @@ public class UserLoginInfo {
 
         @JsonProperty("remember_login")
         private boolean rememberLogin;
+
+        @JsonProperty("webcookie")
+        private String webCookie;
     }
 }
