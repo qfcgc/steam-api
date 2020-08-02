@@ -56,6 +56,10 @@ public class SteamHttpClientIT {
         assertNotNull(data.getTokenGId());
     }
 
+    /**
+     * Execute login to steam account.
+     * If account has steam guard you can change the value of steam guard in debug.
+     */
     @Test
     @Order(2)
     public void testLogin() throws SteamHttpClientException {
@@ -70,14 +74,15 @@ public class SteamHttpClientIT {
         assertNotNull(loginInfo);
 
         if (!loginInfo.isSuccess()) {
-            String code = "_MOCK"; //Use debug to insert real value
+            String steamGuardCode = "_MOCK"; //Use debug to insert real value
             if (steamGuardCodeProvider.getSteamGuardCode() != null) {
-                code = steamGuardCodeProvider.getSteamGuardCode(); //it is not supposed to be executed in test
+                //it is not supposed to be executed in test
+                steamGuardCode = steamGuardCodeProvider.getSteamGuardCode();
             }
             credentials = new UserCredentials(
                     credentials.getUsername(),
                     credentials.getPassword(),
-                    code,
+                    steamGuardCode,
                     loginInfo.getEmailSteamId());
 
             rsaDataContainer =

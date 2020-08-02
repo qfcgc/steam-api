@@ -17,6 +17,9 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * Default implementation of {@link SteamClient}.
+ */
 @Slf4j
 @Data
 @NoArgsConstructor
