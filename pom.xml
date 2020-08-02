@@ -24,7 +24,6 @@
         <maven.dependency.plugin>3.1.2</maven.dependency.plugin>
         <java.source>14</java.source>
         <java.target>14</java.target>
-        <mockito.core.version>3.4.4</mockito.core.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <apache.httpclient>4.5.12</apache.httpclient>
@@ -132,18 +131,6 @@
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-test</artifactId>
                 <version>${springframework.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.mockito</groupId>
-                <artifactId>mockito-core</artifactId>
-                <version>${mockito.core.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.mockito</groupId>
-                <artifactId>mockito-junit-jupiter</artifactId>
-                <version>${mockito.core.version}</version>
                 <scope>test</scope>
             </dependency>
 
