@@ -67,12 +67,12 @@ public class SteamClientImpl implements SteamClient {
 
     @Override
     public void loadUserInfo() throws SteamHttpClientException {
-        try {
-            Map<String, String> map =
-                    client.execute(new GetUserInfoSteamHttpRequest(), new UserInfoSteamHTMLParser<>());
-        } catch (SteamHttpClientException e) {
-            log.error("Getting user info failed", e);
-            throw e;
-        }
+//        try {
+//            Map<String, String> map =
+//                    client.execute(new GetUserInfoSteamHttpRequest(), new UserInfoSteamHTMLParser<>());
+//        } catch (SteamHttpClientException e) {
+//            log.error("Getting user info failed", e);
+//            throw e;
+//        }
     }
 }

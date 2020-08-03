@@ -3,11 +3,9 @@ package com.steamext.steam.api.logic.client.http;
 import com.steamext.steam.api.logic.PropertiesUtils;
 import com.steamext.steam.api.logic.TestConfig;
 import com.steamext.steam.api.logic.client.http.parser.MarketPageHTMLParser;
+import com.steamext.steam.api.logic.client.http.parser.TradeElementsPageHTMLParser;
 import com.steamext.steam.api.logic.client.http.parser.UserInfoSteamHTMLParser;
-import com.steamext.steam.api.logic.client.http.request.GetMarketPageSteamHttpRequest;
-import com.steamext.steam.api.logic.client.http.request.GetRsaKeySteamHttpRequest;
-import com.steamext.steam.api.logic.client.http.request.GetUserInfoSteamHttpRequest;
-import com.steamext.steam.api.logic.client.http.request.LoginSteamHttpRequest;
+import com.steamext.steam.api.logic.client.http.request.*;
 import com.steamext.steam.api.logic.entry.SteamGuardCodeProvider;
 import com.steamext.steam.api.logic.exceptions.SteamHttpClientException;
 import com.steamext.steam.api.logic.model.responsemodel.*;
@@ -121,6 +119,16 @@ public class SteamHttpClientIT {
         if (response.getRestrictions() != null) {
             validateRestrictions(response.getRestrictions());
         }
+    }
+
+    @Test
+    @Order(5)
+    public void testGettingTradeElementsByAppId() throws SteamHttpClientException {
+        String csGoAppId = "730";
+        TradeElements response = client.execute(new GetTradeElementsByAppIdSteamHttpRequest(csGoAppId),
+                new TradeElementsPageHTMLParser());
+
+        assertNotNull(response);
     }
 
     /**
