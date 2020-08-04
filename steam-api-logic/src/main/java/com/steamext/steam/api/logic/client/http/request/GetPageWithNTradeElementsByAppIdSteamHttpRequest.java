@@ -45,21 +45,25 @@ public class GetPageWithNTradeElementsByAppIdSteamHttpRequest implements SteamHt
     public HttpRequest getRequest() {
         URI uri = null;
         try {
-            uri = new URIBuilder(TRADE_ELEMENTS_BY_APP_ID_PATH)
-                    .addParameter("appid", appId)
-                    .addParameter("query", "")
-                    .addParameter("count", String.valueOf(blockSize))
-                    .addParameter("search_descriptions", "0") //todo: what does it?
-                    .addParameter("sort_column", sortColumn)
-                    .addParameter("sort_dir", "desc") //asc doesn't work
-                    .addParameter("start", String.valueOf(blockSize * pageNumber))
-                    .addParameter("norender", "1") //1 means we don't want to get rendered html
-                    .build();
+            uri = buildURI();
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
 
         return new HttpGet(uri);
+    }
+
+    private URI buildURI() throws URISyntaxException {
+        return new URIBuilder(TRADE_ELEMENTS_BY_APP_ID_PATH)
+                .addParameter("appid", appId)
+                .addParameter("query", "")
+                .addParameter("count", String.valueOf(blockSize))
+                .addParameter("search_descriptions", "0") //todo: what does it?
+                .addParameter("sort_column", sortColumn)
+                .addParameter("sort_dir", "desc") //asc doesn't work
+                .addParameter("start", String.valueOf(blockSize * pageNumber))
+                .addParameter("norender", "1") //1 means we don't want to get rendered html
+                .build();
     }
 
     @Override
