@@ -4,22 +4,18 @@ import com.steamext.steam.api.logic.PropertiesUtils;
 import com.steamext.steam.api.logic.TestConfig;
 import com.steamext.steam.api.logic.client.http.parser.MarketPageHTMLParser;
 import com.steamext.steam.api.logic.client.http.parser.UserInfoSteamHTMLParser;
-import com.steamext.steam.api.logic.client.http.request.GetMarketPageSteamHttpRequest;
-import com.steamext.steam.api.logic.client.http.request.GetRsaKeySteamHttpRequest;
-import com.steamext.steam.api.logic.client.http.request.GetUserInfoSteamHttpRequest;
-import com.steamext.steam.api.logic.client.http.request.LoginSteamHttpRequest;
+import com.steamext.steam.api.logic.client.http.request.*;
 import com.steamext.steam.api.logic.entry.SteamGuardCodeProvider;
 import com.steamext.steam.api.logic.exceptions.SteamHttpClientException;
-import com.steamext.steam.api.logic.model.responsemodel.*;
 import com.steamext.steam.api.logic.model.requestmodel.UserCredentials;
+import com.steamext.steam.api.logic.model.responsemodel.*;
+import com.steamext.steam.api.logic.model.responsemodel.tradeelements.JsonTradeElementsContainer;
 import com.steamext.steam.api.model.requestmodel.UserPageInfo;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
-import java.util.Scanner;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -121,6 +117,36 @@ public class SteamHttpClientIT {
         if (response.getRestrictions() != null) {
             validateRestrictions(response.getRestrictions());
         }
+    }
+
+    @Test
+    @Order(5)
+    public void testGettingTradeElementsByAppId() throws SteamHttpClientException {
+        String csGoAppId = "730";
+        JsonTradeElementsContainer response = client.execute(
+                new GetPageWithNTradeElementsByAppIdSteamHttpRequest(csGoAppId));
+
+        assertNotNull(response);
+        assertNotEquals(0, response.getTotalCount());
+        assertNotNull(response.getTradeElements());
+        assertNotEquals(0, response.getTradeElements().size());
+        assertNotNull(response.getSearchData());
+        assertNotEquals(0, response.getSearchData().getTotalCount());
+    }
+
+    @Test
+    @Order(5)
+    public void testGettingTradeElementsByNotExistingAppId() throws SteamHttpClientException {
+        String noExistingApp = "1";
+        JsonTradeElementsContainer response = client.execute(
+                new GetPageWithNTradeElementsByAppIdSteamHttpRequest(noExistingApp));
+
+        assertNotNull(response);
+        assertEquals(0, response.getTotalCount());
+        assertNotNull(response.getTradeElements());
+        assertEquals(0, response.getTradeElements().size());
+        assertNotNull(response.getSearchData());
+        assertEquals(0, response.getSearchData().getTotalCount());
     }
 
     /**
