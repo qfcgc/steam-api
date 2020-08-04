@@ -3,21 +3,19 @@ package com.steamext.steam.api.logic.client.http;
 import com.steamext.steam.api.logic.PropertiesUtils;
 import com.steamext.steam.api.logic.TestConfig;
 import com.steamext.steam.api.logic.client.http.parser.MarketPageHTMLParser;
-import com.steamext.steam.api.logic.client.http.parser.TradeElementsPageHTMLParser;
 import com.steamext.steam.api.logic.client.http.parser.UserInfoSteamHTMLParser;
 import com.steamext.steam.api.logic.client.http.request.*;
 import com.steamext.steam.api.logic.entry.SteamGuardCodeProvider;
 import com.steamext.steam.api.logic.exceptions.SteamHttpClientException;
 import com.steamext.steam.api.logic.model.responsemodel.*;
 import com.steamext.steam.api.logic.model.requestmodel.UserCredentials;
+import com.steamext.steam.api.logic.model.responsemodel.tradeelements.JsonTradeElementsContainer;
 import com.steamext.steam.api.model.requestmodel.UserPageInfo;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
-import java.util.Scanner;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -125,8 +123,8 @@ public class SteamHttpClientIT {
     @Order(5)
     public void testGettingTradeElementsByAppId() throws SteamHttpClientException {
         String csGoAppId = "730";
-        TradeElements response = client.execute(new GetTradeElementsByAppIdSteamHttpRequest(csGoAppId),
-                new TradeElementsPageHTMLParser());
+        JsonTradeElementsContainer response = client.execute(
+                new GetPageWithNTradeElementsByAppIdSteamHttpRequest(csGoAppId));
 
         assertNotNull(response);
     }
