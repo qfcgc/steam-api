@@ -7,8 +7,8 @@ import com.steamext.steam.api.logic.client.http.parser.UserInfoSteamHTMLParser;
 import com.steamext.steam.api.logic.client.http.request.*;
 import com.steamext.steam.api.logic.entry.SteamGuardCodeProvider;
 import com.steamext.steam.api.logic.exceptions.SteamHttpClientException;
-import com.steamext.steam.api.logic.model.responsemodel.*;
 import com.steamext.steam.api.logic.model.requestmodel.UserCredentials;
+import com.steamext.steam.api.logic.model.responsemodel.*;
 import com.steamext.steam.api.logic.model.responsemodel.tradeelements.JsonTradeElementsContainer;
 import com.steamext.steam.api.model.requestmodel.UserPageInfo;
 import org.junit.jupiter.api.*;
@@ -127,6 +127,26 @@ public class SteamHttpClientIT {
                 new GetPageWithNTradeElementsByAppIdSteamHttpRequest(csGoAppId));
 
         assertNotNull(response);
+        assertNotEquals(0, response.getTotalCount());
+        assertNotNull(response.getTradeElements());
+        assertNotEquals(0, response.getTradeElements().size());
+        assertNotNull(response.getSearchData());
+        assertNotEquals(0, response.getSearchData().getTotalCount());
+    }
+
+    @Test
+    @Order(5)
+    public void testGettingTradeElementsByNotExistingAppId() throws SteamHttpClientException {
+        String noExistingApp = "1";
+        JsonTradeElementsContainer response = client.execute(
+                new GetPageWithNTradeElementsByAppIdSteamHttpRequest(noExistingApp));
+
+        assertNotNull(response);
+        assertEquals(0, response.getTotalCount());
+        assertNotNull(response.getTradeElements());
+        assertEquals(0, response.getTradeElements().size());
+        assertNotNull(response.getSearchData());
+        assertEquals(0, response.getSearchData().getTotalCount());
     }
 
     /**
