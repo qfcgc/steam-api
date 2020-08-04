@@ -119,6 +119,9 @@ public class SteamHttpClientIT {
         }
     }
 
+    /**
+     * Test for getting trade elements for existing game.
+     */
     @Test
     @Order(5)
     public void testGettingTradeElementsByAppId() throws SteamHttpClientException {
@@ -134,6 +137,9 @@ public class SteamHttpClientIT {
         assertNotEquals(0, response.getSearchData().getTotalCount());
     }
 
+    /**
+     * Test for getting trade elements for non-existing game.
+     */
     @Test
     @Order(5)
     public void testGettingTradeElementsByNotExistingAppId() throws SteamHttpClientException {
