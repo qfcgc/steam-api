@@ -20,6 +20,14 @@ import java.net.URISyntaxException;
 public class GetPageWithNTradeElementsByAppIdSteamHttpRequest implements SteamHttpRequest {
     private final String TRADE_ELEMENTS_BY_APP_ID_PATH = "/market/search/render/?query=&start=0&count=354856&search_descriptions=0&sort_column=popular&sort_dir=desc&norender=1";
 
+    /**
+     * Number of page with trade elements.
+     * Field is needed to set boundaries for getting trade elements.
+     * <p>If {@code pageNumber = 0} then trade elements
+     * from 0 to ({@code blockSize} - 1) will be returned.</p>
+     * <p>If {@code pageNumber = N} and {@code blockSize = M} then trade elements from
+     * (N * M) to ((N + 1) * M - 1) will be returned.</p>
+     */
     private int pageNumber = 0;
 
     @NonNull
@@ -53,6 +61,11 @@ public class GetPageWithNTradeElementsByAppIdSteamHttpRequest implements SteamHt
         return new HttpGet(uri);
     }
 
+    /**
+     * Build URI for request.
+     *
+     * @return uri
+     */
     private URI buildURI() throws URISyntaxException {
         return new URIBuilder(TRADE_ELEMENTS_BY_APP_ID_PATH)
                 .addParameter("appid", appId)
