@@ -3,6 +3,7 @@ package com.steamext.steam.api.logic.client.http;
 import com.steamext.steam.api.logic.PropertiesUtils;
 import com.steamext.steam.api.logic.TestConfig;
 import com.steamext.steam.api.logic.client.http.parser.MarketPageHTMLParser;
+import com.steamext.steam.api.logic.client.http.parser.TradeElementPageHTMLParser;
 import com.steamext.steam.api.logic.client.http.parser.UserInfoSteamHTMLParser;
 import com.steamext.steam.api.logic.client.http.request.*;
 import com.steamext.steam.api.logic.entry.SteamGuardCodeProvider;
@@ -10,6 +11,7 @@ import com.steamext.steam.api.logic.exceptions.SteamHttpClientException;
 import com.steamext.steam.api.logic.model.requestmodel.UserCredentials;
 import com.steamext.steam.api.logic.model.responsemodel.*;
 import com.steamext.steam.api.logic.model.responsemodel.tradeelements.JsonTradeElementsContainer;
+import com.steamext.steam.api.logic.model.responsemodel.tradeelements.ParsedTradeElement;
 import com.steamext.steam.api.model.requestmodel.UserPageInfo;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -107,7 +109,7 @@ public class SteamHttpClientIT {
      * Test for getting start market page and extraction info from it.
      */
     @Test
-    @Order(4)
+    @Order(3)
     public void testGettingMarketPage() throws SteamHttpClientException {
         StartMarketPageResponse response = client.execute(new GetMarketPageSteamHttpRequest(),
                 new MarketPageHTMLParser());
@@ -123,7 +125,7 @@ public class SteamHttpClientIT {
      * Test for getting trade elements for existing game.
      */
     @Test
-    @Order(5)
+    @Order(3)
     public void testGettingTradeElementsByAppId() throws SteamHttpClientException {
         String csGoAppId = "730";
         JsonTradeElementsContainer response = client.execute(
@@ -141,7 +143,7 @@ public class SteamHttpClientIT {
      * Test for getting trade elements for non-existing game.
      */
     @Test
-    @Order(5)
+    @Order(3)
     public void testGettingTradeElementsByNotExistingAppId() throws SteamHttpClientException {
         String noExistingApp = "1";
         JsonTradeElementsContainer response = client.execute(
@@ -153,6 +155,20 @@ public class SteamHttpClientIT {
         assertEquals(0, response.getTradeElements().size());
         assertNotNull(response.getSearchData());
         assertEquals(0, response.getSearchData().getTotalCount());
+    }
+
+    @Test
+    @Order(3)
+    public void testGettingTradeElement() throws SteamHttpClientException {
+        int gameId = 753;
+        String tradeElementId = "570-Bounty%20Hunter";
+        ParsedTradeElement response = client.execute(
+                new GetTradeElementSteamHttpRequest(tradeElementId, gameId),
+                new TradeElementPageHTMLParser());
+
+        assertNotNull(response);
+        assertNotNull(response.getItemName());
+        assertEquals("Bounty Hunter", response.getItemName());
     }
 
     /**
