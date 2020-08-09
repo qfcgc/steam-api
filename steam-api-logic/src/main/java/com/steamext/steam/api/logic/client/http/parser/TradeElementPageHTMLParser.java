@@ -13,7 +13,13 @@ import org.jsoup.nodes.Document;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -27,26 +33,47 @@ public class TradeElementPageHTMLParser implements SteamHTMLParser<ParsedTradeEl
             Document doc = Jsoup.parse(html, StandardCharsets.UTF_8.name(),
                     "steamcommunity.com");
 
-            ParsedTradeElementWrapper parsedTradeElementWrapper = new ParsedTradeElementWrapper();
-
             String json = extractTradeElementInfoJson(doc);
-            parsedTradeElementWrapper = mapper.readValue(json, ParsedTradeElementWrapper.class);
+            ParsedTradeElementWrapper parsedTradeElementWrapper =
+                    mapper.readValue(json, ParsedTradeElementWrapper.class);
             parsedTradeElementPageResponse.setTradeElementWrapper(parsedTradeElementWrapper);
 
             String history = extractPriceHistoryInfoJson(doc);
             List<List<String>> historyPointStrings =
                     mapper.readValue(history, new TypeReference<>() {
                     });
-            List<JsonPriceHistoryPoint> historyPoints = historyPointStrings
-                    .stream().map(x -> JsonPriceHistoryPoint.builder()
-                            .date(x.get(0))
-                            .price(Double.parseDouble(x.get(1)))
-                            .amount(x.get(2)).build()).collect(Collectors.toList());
+            List<JsonPriceHistoryPoint> historyPoints =
+                    transformToHistoryPoints(historyPointStrings);
             parsedTradeElementPageResponse.setPriceHistoryPoints(historyPoints);
         } catch (IOException e) {
             e.printStackTrace();
         }
         return parsedTradeElementPageResponse;
+    }
+
+    private List<JsonPriceHistoryPoint> transformToHistoryPoints(List<List<String>> historyPointStrings) {
+        return historyPointStrings
+                .stream().map(x -> JsonPriceHistoryPoint.builder()
+                        .date(parseHistoryPointsDateString(x.get(0)))
+                        .price(Double.parseDouble(x.get(1)))
+                        .amount(Integer.parseInt(x.get(2)))
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    private Calendar parseHistoryPointsDateString(String dateString) {
+        DateFormat dateFormat = new SimpleDateFormat("MMM dd yyyy hh", Locale.ENGLISH);
+        Date date;
+        try {
+            date = dateFormat.parse(dateString);
+        } catch (ParseException e) {
+            log.error("Trade element history point dare parsing error", e);
+            throw new RuntimeException(e);
+        }
+
+        Calendar calendar = Calendar.getInstance(Locale.ENGLISH);
+        calendar.setTime(date);
+        return calendar;
     }
 
     //todo: error handling

@@ -185,7 +185,6 @@ public class SteamHttpClientIT {
     private void validateHistoryPoint(JsonPriceHistoryPoint historyPoint) {
         assertNotNull(historyPoint);
         assertNotNull(historyPoint.getDate());
-        assertNotNull(historyPoint.getAmount());
     }
 
     private void validateTradeElementWrapper(ParsedTradeElementPageResponse response,
