@@ -3,19 +3,22 @@ package com.steamext.steam.api.logic.client.http;
 import com.steamext.steam.api.logic.PropertiesUtils;
 import com.steamext.steam.api.logic.TestConfig;
 import com.steamext.steam.api.logic.client.http.parser.MarketPageHTMLParser;
+import com.steamext.steam.api.logic.client.http.parser.TradeElementPageHTMLParser;
 import com.steamext.steam.api.logic.client.http.parser.UserInfoSteamHTMLParser;
 import com.steamext.steam.api.logic.client.http.request.*;
 import com.steamext.steam.api.logic.entry.SteamGuardCodeProvider;
 import com.steamext.steam.api.logic.exceptions.SteamHttpClientException;
 import com.steamext.steam.api.logic.model.requestmodel.UserCredentials;
 import com.steamext.steam.api.logic.model.responsemodel.*;
-import com.steamext.steam.api.logic.model.responsemodel.tradeelements.JsonTradeElementsContainer;
+import com.steamext.steam.api.logic.model.responsemodel.tradeelements.*;
 import com.steamext.steam.api.model.requestmodel.UserPageInfo;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -107,7 +110,7 @@ public class SteamHttpClientIT {
      * Test for getting start market page and extraction info from it.
      */
     @Test
-    @Order(4)
+    @Order(3)
     public void testGettingMarketPage() throws SteamHttpClientException {
         StartMarketPageResponse response = client.execute(new GetMarketPageSteamHttpRequest(),
                 new MarketPageHTMLParser());
@@ -123,7 +126,7 @@ public class SteamHttpClientIT {
      * Test for getting trade elements for existing game.
      */
     @Test
-    @Order(5)
+    @Order(3)
     public void testGettingTradeElementsByAppId() throws SteamHttpClientException {
         String csGoAppId = "730";
         JsonTradeElementsContainer response = client.execute(
@@ -141,7 +144,7 @@ public class SteamHttpClientIT {
      * Test for getting trade elements for non-existing game.
      */
     @Test
-    @Order(5)
+    @Order(3)
     public void testGettingTradeElementsByNotExistingAppId() throws SteamHttpClientException {
         String noExistingApp = "1";
         JsonTradeElementsContainer response = client.execute(
@@ -153,6 +156,82 @@ public class SteamHttpClientIT {
         assertEquals(0, response.getTradeElements().size());
         assertNotNull(response.getSearchData());
         assertEquals(0, response.getSearchData().getTotalCount());
+    }
+
+    /**
+     * Test getting existing trade element, its fields and price history points.
+     */
+    @Test
+    @Order(3)
+    public void testGettingTradeElement() throws SteamHttpClientException {
+        int gameId = 753;
+        String tradeElementMarketHashName = "570-Bounty Hunter";
+        ParsedTradeElementPageResponse response = client.execute(
+                new GetTradeElementSteamHttpRequest(tradeElementMarketHashName, gameId),
+                new TradeElementPageHTMLParser());
+
+        assertNotNull(response);
+
+        validateTradeElementWrapper(response, gameId, tradeElementMarketHashName);
+        validatePriceHistoryPoints(response);
+    }
+
+    /**
+     * Validate price history points are presented and validate first and last history points.
+     *
+     * @param response response object
+     */
+    private void validatePriceHistoryPoints(ParsedTradeElementPageResponse response) {
+        List<JsonPriceHistoryPoint> priceHistoryPoints = response.getPriceHistoryPoints();
+        assertNotNull(priceHistoryPoints);
+        assertFalse(priceHistoryPoints.isEmpty());
+        validatePriceHistoryPoint(priceHistoryPoints.get(0));
+        validatePriceHistoryPoint(priceHistoryPoints.get(priceHistoryPoints.size() - 1));
+    }
+
+    /**
+     * Validate price history point has non-null date object and non-zero amount and price.
+     *
+     * @param historyPoint history point to validate
+     */
+    private void validatePriceHistoryPoint(JsonPriceHistoryPoint historyPoint) {
+        assertNotNull(historyPoint);
+        assertNotNull(historyPoint.getDate());
+        assertNotEquals(0, historyPoint.getAmount());
+        assertNotEquals(0D, historyPoint.getPrice());
+    }
+
+    /**
+     * Validate trade element wrapper.
+     * Checks trade element exists and its appId and contextId are ok.
+     *
+     * @param response                   response object
+     * @param gameId                     game id to validate trade element containing appId property
+     * @param tradeElementMarketHashName market hash name to validate
+     *                                   trade element containing marketHashName property
+     */
+    private void validateTradeElementWrapper(ParsedTradeElementPageResponse response,
+                                             int gameId, String tradeElementMarketHashName) {
+        assertNotNull(response.getTradeElementWrapper());
+
+        ParsedTradeElementWrapper tradeElementWrapper = response.getTradeElementWrapper();
+        assertNotNull(tradeElementWrapper);
+        assertNotNull(tradeElementWrapper.getApps());
+        assertEquals(1, tradeElementWrapper.getApps().size());
+
+        ParsedTradeElementApp app = tradeElementWrapper.getApps().get(0);
+        assertNotNull(app.getContexts());
+        assertEquals(1, app.getContexts().size());
+
+        ParsedTradeElementContext context = app.getContexts().get(0);
+        assertNotNull(context.getTradeElements());
+        assertEquals(1, context.getTradeElements().size());
+
+        TradeElementAssertDescription element = context.getTradeElements().get(0);
+        assertEquals(app.getAppId(), element.getAppId());
+        assertEquals(context.getContextId(), element.getContextId());
+        assertEquals(gameId, element.getAppId());
+        assertEquals(tradeElementMarketHashName, element.getMarketHashName());
     }
 
     /**
