@@ -22,6 +22,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
+/**
+ * HTML parser implementation for parsing trade element market page html input stream.
+ */
 @Slf4j
 public class TradeElementPageHTMLParser implements SteamHTMLParser<ParsedTradeElementPageResponse> {
     @Override
@@ -51,6 +54,13 @@ public class TradeElementPageHTMLParser implements SteamHTMLParser<ParsedTradeEl
         return parsedTradeElementPageResponse;
     }
 
+    /**
+     * Maps price history points from [string, float, string] form to
+     * {{@link Calendar}, {@link Double}, {@link Integer}} form.
+     *
+     * @param historyPointStrings list of string lists
+     * @return list of price history point objects
+     */
     private List<JsonPriceHistoryPoint> transformToHistoryPoints(List<List<String>> historyPointStrings) {
         return historyPointStrings
                 .stream().map(x -> JsonPriceHistoryPoint.builder()
@@ -61,6 +71,12 @@ public class TradeElementPageHTMLParser implements SteamHTMLParser<ParsedTradeEl
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Parse date from "MMM dd yyyy hh"-pattern String to {@link Calendar} object.
+     *
+     * @param dateString String date
+     * @return Calendar object
+     */
     private Calendar parseHistoryPointsDateString(String dateString) {
         DateFormat dateFormat = new SimpleDateFormat("MMM dd yyyy hh", Locale.ENGLISH);
         Date date;
@@ -76,6 +92,13 @@ public class TradeElementPageHTMLParser implements SteamHTMLParser<ParsedTradeEl
         return calendar;
     }
 
+    /**
+     * Extracts JSON string from document.
+     * String contains information about trade element.
+     *
+     * @param doc document
+     * @return json string
+     */
     //todo: error handling
     private String extractTradeElementInfoJson(Document doc) {
         int rgAccessStartIndex = doc.html().indexOf("g_rgAssets =");
@@ -84,8 +107,15 @@ public class TradeElementPageHTMLParser implements SteamHTMLParser<ParsedTradeEl
         return doc.html().substring(jsonStartIndex, jsonEndIndex);
     }
 
+    /**
+     * Extracts JSON string from document.
+     * String contains information about trade element price history elements.
+     *
+     * @param doc document
+     * @return json string
+     */
+    //todo: error handling
     private String extractPriceHistoryInfoJson(Document doc) {
-        //var line1=[[
         int priceHistoryInfoStartIndex = doc.html().indexOf("var line1=[[");
         int jsonStartIndex = doc.html().indexOf('[', priceHistoryInfoStartIndex);
         int jsonEndIndex = doc.html().indexOf("];", jsonStartIndex) + 1;

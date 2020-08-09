@@ -12,7 +12,6 @@ import com.steamext.steam.api.logic.model.requestmodel.UserCredentials;
 import com.steamext.steam.api.logic.model.responsemodel.*;
 import com.steamext.steam.api.logic.model.responsemodel.tradeelements.*;
 import com.steamext.steam.api.model.requestmodel.UserPageInfo;
-import lombok.NonNull;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -159,6 +158,9 @@ public class SteamHttpClientIT {
         assertEquals(0, response.getSearchData().getTotalCount());
     }
 
+    /**
+     * Test getting existing trade element, its fields and price history points.
+     */
     @Test
     @Order(3)
     public void testGettingTradeElement() throws SteamHttpClientException {
@@ -171,22 +173,43 @@ public class SteamHttpClientIT {
         assertNotNull(response);
 
         validateTradeElementWrapper(response, gameId, tradeElementMarketHashName);
-        validateHistoryPoints(response);
+        validatePriceHistoryPoints(response);
     }
 
-    private void validateHistoryPoints(ParsedTradeElementPageResponse response) {
+    /**
+     * Validate price history points are presented and validate first and last history points.
+     *
+     * @param response response object
+     */
+    private void validatePriceHistoryPoints(ParsedTradeElementPageResponse response) {
         List<JsonPriceHistoryPoint> priceHistoryPoints = response.getPriceHistoryPoints();
         assertNotNull(priceHistoryPoints);
         assertFalse(priceHistoryPoints.isEmpty());
-        validateHistoryPoint(priceHistoryPoints.get(0));
-        validateHistoryPoint(priceHistoryPoints.get(priceHistoryPoints.size()-1));
+        validatePriceHistoryPoint(priceHistoryPoints.get(0));
+        validatePriceHistoryPoint(priceHistoryPoints.get(priceHistoryPoints.size() - 1));
     }
 
-    private void validateHistoryPoint(JsonPriceHistoryPoint historyPoint) {
+    /**
+     * Validate price history point has non-null date object and non-zero amount and price.
+     *
+     * @param historyPoint history point to validate
+     */
+    private void validatePriceHistoryPoint(JsonPriceHistoryPoint historyPoint) {
         assertNotNull(historyPoint);
         assertNotNull(historyPoint.getDate());
+        assertNotEquals(0, historyPoint.getAmount());
+        assertNotEquals(0D, historyPoint.getPrice());
     }
 
+    /**
+     * Validate trade element wrapper.
+     * Checks trade element exists and its appId and contextId are ok.
+     *
+     * @param response                   response object
+     * @param gameId                     game id to validate trade element containing appId property
+     * @param tradeElementMarketHashName market hash name to validate
+     *                                   trade element containing marketHashName property
+     */
     private void validateTradeElementWrapper(ParsedTradeElementPageResponse response,
                                              int gameId, String tradeElementMarketHashName) {
         assertNotNull(response.getTradeElementWrapper());
